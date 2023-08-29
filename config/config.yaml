@@ -1,0 +1,142 @@
+
+version: 1.0.0
+
+#
+# The client section used by GO SDK.
+#
+client:
+  organization: Org1
+  logging:
+    level: info
+  cryptoconfig:
+    path:  ${FABRIC_SDK_GO_PROJECT_PATH}/config
+  credentialStore:
+    path: "/tmp/state-store"
+    cryptoStore:
+      path: /tmp/msp
+  BCCSP:
+    security:
+     enabled: true
+     default:
+      provider: "SW"
+     hashAlgorithm: "SHA2"
+     softVerify: true
+     level: 256
+
+  tlsCerts:
+    systemCertPool: true
+    client:
+      key:
+        path: ${FABRIC_SDK_GO_PROJECT_PATH}/config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/keystore/priv_sk
+      cert:
+        path: ${FABRIC_SDK_GO_PROJECT_PATH}/config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/signcerts/Admin@org1.example.com-cert.pem
+
+
+channels:
+  # 如果没有配置，则默认配置
+  _default:
+    peers:
+      peer1.org1.example.com:
+        endorsingPeer: true
+        chaincodeQuery: true
+        ledgerQuery: true
+        eventSource: true
+    policies:
+      queryChannelConfig:
+        minResponses: 1
+        maxTargets: 1
+        retryOpts:
+          attempts: 5
+          initialBackoff: 500ms
+          maxBackoff: 5s
+          backoffFactor: 2.0
+      discovery:
+        maxTargets: 2
+        retryOpts:
+          attempts: 4
+          initialBackoff: 500ms
+          maxBackoff: 5s
+      eventService:
+        resolverStrategy: PreferOrg
+        balancer: Random
+        blockHeightLagThreshold: 5
+        reconnectBlockHeightLagThreshold: 8
+        peerMonitorPeriod: 6s
+  mychannel:
+    peers:
+      peer0.org1.example.com:
+        endorsingPeer: true
+        chaincodeQuery: true
+        ledgerQuery: true
+        eventSource: true
+      peer0.org2.example.com:
+        endorsingPeer: true
+        chaincodeQuery: true
+        ledgerQuery: true
+        eventSource: true
+
+
+
+#
+# list of participating organizations in this network
+#
+organizations:
+  Org1:
+    mspid: Org1MSP
+    cryptoPath:  ${FABRIC_SDK_GO_PROJECT_PATH}/config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp
+    peers:
+      - peer0.org1.example.com
+    users:
+      Admin:
+        cert:
+          path: ${FABRIC_SDK_GO_PROJECT_PATH}/config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/signcerts/Admin@org1.example.com-cert.pem
+        key:
+          path: ${FABRIC_SDK_GO_PROJECT_PATH}/config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/keystore/priv_sk
+  Org2:
+    mspid: Org2MSP
+    cryptoPath:  ${FABRIC_SDK_GO_PROJECT_PATH}/config/peerOrganizations/org2.example.com/users/Admin@org2.example.com/msp
+    peers:
+      - peer0.org2.example.com
+
+
+  ordererorg:
+      mspID: OrdererMSP
+      cryptoPath: ${FABRIC_SDK_GO_PROJECT_PATH}/config/ordererOrganizations/example.com/users/{username}@example.com/msp
+orderers:
+  orderer.example.com:
+    url: orderer.example.com:7050
+    grpcOptions:
+      ssl-target-name-override: orderer.example.com
+      keep-alive-time: 0s
+      keep-alive-timeout: 20s
+      keep-alive-permit: false
+      fail-fast: false
+      allow-insecure: false
+    tlsCACerts:
+      path: ${FABRIC_SDK_GO_PROJECT_PATH}/config/ordererOrganizations/example.com/tlsca/tlsca.example.com-cert.pem
+
+peers:
+  peer0.org1.example.com:
+    url: peer0.org1.example.com:7051
+
+    grpcOptions:
+      ssl-target-name-override: peer0.org1.example.com
+      keep-alive-time: 0s
+      keep-alive-timeout: 20s
+      keep-alive-permit: false
+      fail-fast: false
+      allow-insecure: false
+    tlsCACerts:
+      path: ${FABRIC_SDK_GO_PROJECT_PATH}/config/peerOrganizations/org1.example.com/tlsca/tlsca.org1.example.com-cert.pem
+
+  peer0.org2.example.com:
+    url: peer0.org2.example.com:9051
+    grpcOptions:
+      ssl-target-name-override: peer0.org2.example.com
+      keep-alive-time: 0s
+      keep-alive-timeout: 20s
+      keep-alive-permit: false
+      fail-fast: false
+      allow-insecure: false
+    tlsCACerts:
+      path: ${FABRIC_SDK_GO_PROJECT_PATH}/config/peerOrganizations/org2.example.com/tlsca/tlsca.org2.example.com-cert.pem
