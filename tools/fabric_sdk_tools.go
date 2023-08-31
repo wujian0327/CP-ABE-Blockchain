@@ -13,6 +13,8 @@ import (
 	"github.com/hyperledger/fabric-sdk-go/pkg/core/config"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
 	"math/big"
+	"os"
+	"time"
 )
 
 const (
@@ -32,6 +34,7 @@ func ExecuteChaincode(chaincodeId string, functionName string, args ...string) (
 	}
 
 	fmt.Printf("------------invoke chaincode: %v,%v,%v------------------\n", chaincodeId, functionName, args)
+	start := time.Now().UnixMilli()
 	byteArgs := make([][]byte, len(args))
 	for i, v := range args {
 		byteArgs[i] = []byte(v)
@@ -44,7 +47,9 @@ func ExecuteChaincode(chaincodeId string, functionName string, args ...string) (
 		fmt.Printf("invoke to query funds: %s", err)
 		return nil, err
 	}
-	fmt.Printf("invoke chaincode success,status:%v,Payload: %v\n", response.ChaincodeStatus, string(response.Payload))
+	end := time.Now().UnixMilli()
+	timeUsed := end - start
+	fmt.Printf("invoke chaincode success,status:%v, time: %vms,Payload: %v\n", response.ChaincodeStatus, timeUsed, string(response.Payload))
 	return response.Payload, nil
 }
 
@@ -58,6 +63,7 @@ func QueryChaincode(chaincodeId string, functionName string, args ...string) ([]
 	}
 
 	fmt.Printf("------------query chaincode: %v,%v,%v------------------\n", chaincodeId, functionName, args)
+	start := time.Now().UnixMilli()
 	byteArgs := make([][]byte, len(args))
 	for i, v := range args {
 		byteArgs[i] = []byte(v)
@@ -70,7 +76,8 @@ func QueryChaincode(chaincodeId string, functionName string, args ...string) ([]
 		fmt.Printf("Failed to query funds: %s", err)
 		return nil, err
 	}
-	fmt.Printf("query chaincode success,status:%v,Payload: %v\n", response.ChaincodeStatus, string(response.Payload))
+	end := time.Now().UnixMilli()
+	fmt.Printf("query chaincode success,status:%v,time: %vms,Payload: %v\n", response.ChaincodeStatus, end-start, string(response.Payload))
 	return response.Payload, nil
 }
 
@@ -132,7 +139,17 @@ func GetChannelClient() (*channel.Client, *fabsdk.FabricSDK, error) {
 // 获得fabricSDK
 // 加载配置文件
 func SDKInit() *fabsdk.FabricSDK {
-	configProvider := config.FromFile(ConfigPath)
+	dir, err := os.Getwd()
+	s1 := "test"
+	s2 := "benchmark"
+	if len(dir) > len(s1) && dir[len(dir)-len(s1):] == s1 {
+		dir = dir[:len(dir)-len(s1)] + ConfigPath
+	} else if len(dir) > len(s2) && dir[len(dir)-len(s2):] == s2 {
+		dir = dir[:len(dir)-len(s2)] + ConfigPath
+	} else {
+		dir = dir + "/" + ConfigPath
+	}
+	configProvider := config.FromFile(dir)
 	sdk, err := fabsdk.New(configProvider)
 	if err != nil {
 		fmt.Printf("Failed to create new SDK: %s", err)

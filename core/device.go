@@ -1,4 +1,4 @@
-package main
+package core
 
 import (
 	"CP-ABE-Blockchain/tools"
@@ -12,11 +12,10 @@ import (
 
 const ChaincodeId = "DTModeling"
 
-const accessStruct = "((company_A AND repairman) OR (company_B AND consumer) OR admin)"
-
 type DTObject struct {
 	Id           string      `json:"id"`
 	Title        string      `json:"title"`
+	Description  string      `json:"description"`
 	Security     string      `json:"security"`
 	Properties   interface{} `json:"properties"`
 	Actions      interface{} `json:"actions"`
@@ -30,8 +29,8 @@ type Attributes struct {
 	Attrs []string `json:"attrs"`
 }
 
-func CreateDTObject() {
-	dtObject := ReadTDToDTObject()
+func CreateDTObject(tdFilePath string, accessStruct string) {
+	dtObject := ReadTDToDTObject(tdFilePath)
 	dtObject.AccessStruct = accessStruct
 	dtObjectBytes, err := json.Marshal(dtObject)
 	if err != nil {
@@ -45,7 +44,21 @@ func CreateDTObject() {
 	fmt.Printf("result: %s \n", result)
 }
 
-func EncryptDataUpload() {
+func UpdateDTObject(tdFilePath string) {
+	dtObject := ReadTDToDTObject(tdFilePath)
+	dtObjectBytes, err := json.Marshal(dtObject)
+	if err != nil {
+		panic(err)
+	}
+	//call smart contract
+	result, err := tools.ExecuteChaincode(ChaincodeId, "Update", string(dtObjectBytes))
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("result: %s \n", result)
+}
+
+func EncryptDataUploadAndShareKey() {
 	//Randomly generate AES keys
 	key := tools.RandKey(32)
 	fmt.Println("key: ", string(key))
@@ -54,9 +67,15 @@ func EncryptDataUpload() {
 	if err != nil {
 		panic(err)
 	}
+
 	//Assuming storage to ipfs
 	ipfsAddress := "device_data/data_enc.txt"
 
+	ShareKeyToBlockchain(key, ipfsAddress)
+
+}
+
+func ShareKeyToBlockchain(key []byte, ipfsAddress string) {
 	//Request the AS to obtain PK
 	resp, err := http.Get("http://localhost:8888/pkInst")
 	if err != nil {
@@ -71,13 +90,12 @@ func EncryptDataUpload() {
 	}
 
 	//get access structure from blockchain
-	dtObject := ReadTDToDTObject()
+	dtObject := ReadTDToDTObject("td_sample.json")
 	dtObjectByte, err := tools.QueryChaincode(ChaincodeId, "GetDTObject", dtObject.Id)
 	err = json.Unmarshal(dtObjectByte, &dtObject)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("dtObject: %#v \n", dtObject)
 	accessStruct := dtObject.AccessStruct
 	msp, err := abe.BooleanToMSP(accessStruct, false)
 	if err != nil {
@@ -96,12 +114,12 @@ func EncryptDataUpload() {
 		panic(err)
 	}
 	fmt.Printf("result: %s \n", result)
-
+	fmt.Printf("dtObjectBytesSize: %v \n", len(dtObjectBytes))
 }
 
-func ReadTDToDTObject() DTObject {
+func ReadTDToDTObject(tdFilePath string) DTObject {
 	//read tdSample file
-	content, err := os.ReadFile("tdSample.json")
+	content, err := os.ReadFile(tdFilePath)
 	if err != nil {
 		panic(err)
 	}

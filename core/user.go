@@ -1,4 +1,4 @@
-package main
+package core
 
 import (
 	"CP-ABE-Blockchain/tools"
@@ -10,8 +10,7 @@ import (
 	"strings"
 )
 
-func KeyGen() abe.FAMEAttribKeys {
-	attrsArray := []string{"company_B", "consumer"}
+func KeyGen(attrsArray []string) abe.FAMEAttribKeys {
 	// 解密时构造 属性
 	attrs := Attributes{
 		Attrs: attrsArray,
@@ -51,7 +50,8 @@ func DecryptData(dtObjectId string, fileSourcePath string, fileTargetPath string
 	}
 
 	//kegGen
-	attribKeys := KeyGen()
+	attrsArray := []string{"A", "B"}
+	attribKeys := KeyGen(attrsArray)
 
 	//get CT from blockchain
 	var dtObject DTObject

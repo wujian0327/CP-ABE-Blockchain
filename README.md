@@ -20,3 +20,7 @@ Install the DTModeling on the fabric.
 ## Run the AS service
 
 ## Run the CP_ABE_Blockchain_test
+
+```shell
+go test -bench=BenchmarkCreateDTObject -benchmem -benchtime=10s
+```

@@ -3,14 +3,13 @@ package test
 import (
 	"CP-ABE-Blockchain/tools"
 	"fmt"
-	"testing"
-
 	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger/fabric-protos-go/common"
 	"github.com/hyperledger/fabric-protos-go/ledger/rwset"
 	"github.com/hyperledger/fabric-protos-go/ledger/rwset/kvrwset"
 	"github.com/hyperledger/fabric-protos-go/msp"
 	"github.com/hyperledger/fabric-protos-go/peer"
+	"testing"
 )
 
 func TestGetBlockData(t *testing.T) {
@@ -169,4 +168,20 @@ func TestGetBlockData(t *testing.T) {
 	}
 	fmt.Print("-----success------\n")
 
+}
+
+func TestBasicGetAllAssets(t *testing.T) {
+	result, err := tools.QueryChaincode("basic", "GetAllAssets")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("result: %s \n", result)
+}
+
+func TestBasicTransfer(t *testing.T) {
+	result, err := tools.ExecuteChaincode("basic", "TransferAsset", "asset6", "Christopher")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("result: %s \n", result)
 }

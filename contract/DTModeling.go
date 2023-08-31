@@ -14,6 +14,7 @@ type SimpleChaincode struct {
 type DTObject struct {
 	Id           string      `json:"id"`
 	Title        string      `json:"title"`
+	Description  string      `json:"description"`
 	Security     string      `json:"security"`
 	Properties   interface{} `json:"properties"`
 	Actions      interface{} `json:"actions"`
