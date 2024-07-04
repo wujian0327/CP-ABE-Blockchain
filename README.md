@@ -1,9 +1,13 @@
 ## Running environment
+**ubuntu 22.04**
+
 **golang 1.18**
 
 **fabric 2.4.3**
 
 **docker-compose**
+
+**IPFS**
 
 ## steps
 ### 1. Deploy the fabric-sample test network
@@ -87,7 +91,7 @@ go mod vendor
 
 ![image-20240704160206689](https://gitee.com/wujian2023/typora_images/raw/master/auto_upload/image-20240704160206689.png)
 
-### 3. Prepare the experimental environment
+### 3. Test if can connect to fabric by SDK
 
 3.1 copy the fabric certificates to config folder
 
@@ -98,7 +102,7 @@ cp -r {fabric-sample-path}/test-network/organizations/* .
 
 ![image-20240704160848466](https://gitee.com/wujian2023/typora_images/raw/master/auto_upload/image-20240704160848466.png)
 
-3.2 test 
+3.2 test if can connect to fabric 
 
 ```
 cd ../
@@ -107,7 +111,23 @@ go test -v ./test/ -run=TestGetBlockData
 
 ![image-20240704161806012](https://gitee.com/wujian2023/typora_images/raw/master/auto_upload/image-20240704161806012.png)
 
-### 4. Run code
+### 4. Start IPFS
+
+**(If you don't want to start IPFS, you need to change the `shareFileToIpfs` method in `device.go`)**
+
+4.1 download IPFS
+
+```
+wget https://dist.ipfs.tech/kubo/v0.29.0/kubo_v0.29.0_linux-amd64.tar.gz
+tar -xvzf kubo_v0.29.0_linux-amd64.tar.gz
+cd kubo
+./ipfs init
+./ipfs daemon
+```
+
+![image-20240704165314529](https://gitee.com/wujian2023/typora_images/raw/master/auto_upload/image-20240704165314529.png)
+
+### 5. Run code
 
 4.1 start the AS server
 
@@ -123,22 +143,5 @@ go run main.go
 go test -v test/CP_ABE_Blockchain_test.go
 ```
 
+![image-20240704164425872](https://gitee.com/wujian2023/typora_images/raw/master/auto_upload/image-20240704164425872.png)
 
-
-## Install chaincode
-
-The chaincode is under the folder contract.
-
-The name of the chaincode is DTModeling.
-
-The channel name is mychannel. 
-
-Install the DTModeling on the fabric.
-
-## Run the AS service
-
-## Run the CP_ABE_Blockchain_test
-
-```shell
-go test -bench=BenchmarkCreateDTObject -benchmem -benchtime=10s
-```

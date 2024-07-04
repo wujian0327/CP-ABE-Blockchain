@@ -91,23 +91,22 @@ func EncryptDataUploadAndShareKey(key []byte) {
 
 	//storage to ipfs
 	filePath := "device_data/data_enc.txt"
+	//ipfsAddress := "123"
 	ipfsAddress := shareFileToIpfs(filePath)
 	ShareKeyToBlockchain(key, ipfsAddress)
 }
 
 func shareFileToIpfs(path string) string {
 	uri := "http://127.0.0.1:5001/api/v0/add"
-	byte, err := ioutil.ReadFile(path)
-	res, err := http.Post(uri, "multipart/form-data", bytes.NewReader(byte))
+	readFile, err := ioutil.ReadFile(path)
+	res, err := http.Post(uri, "multipart/form-data", bytes.NewReader(readFile))
 	if err != nil {
 		fmt.Println("err=", err)
 	}
-	//http返回的response的body必须close,否则就会有内存泄露
 	defer func() {
 		res.Body.Close()
 		fmt.Println("finish")
 	}()
-	//读取body
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		fmt.Println(" post err=", err)
