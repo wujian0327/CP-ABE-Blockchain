@@ -9,6 +9,8 @@
 
 **IPFS**
 
+(The golang version cannot be too high. It is found that versions above 1.18 will cause fabric-sdk-go compilation to fail.)
+
 ## steps
 ### 1. Deploy the fabric-sample test network
 
