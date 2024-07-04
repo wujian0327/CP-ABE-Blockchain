@@ -1,6 +1,6 @@
 {
   "@context": "https://www.w3.org/2022/wot/td/v1.1",
-  "id": "urn:uuid:3deca264-4f90-4321-a5ea-f197e6a1c7cf",
+  "id": "3deca264-4f90-4321-a5ea-f197e6a1c7cf",
   "title": "MyLampThing",
   "description": "Lamp Thing Model Description",
   "securityDefinitions": {

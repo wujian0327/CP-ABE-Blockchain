@@ -179,7 +179,7 @@ func TestBasicGetAllAssets(t *testing.T) {
 }
 
 func TestBasicTransfer(t *testing.T) {
-	result, err := tools.ExecuteChaincode("basic", "TransferAsset", "asset6", "Christopher")
+	result, _, err := tools.ExecuteChaincode("basic", "TransferAsset", "asset6", "Christopher")
 	if err != nil {
 		panic(err)
 	}

@@ -1,0 +1,59 @@
+# Definition of nodes
+# addr address for node
+# tls_ca_cert tls cert
+peer1: &peer1
+  addr: localhost:7051
+  org: org1
+  ssl_target_name_override: peer0.org1.example.com
+  tls_ca_cert: ./organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/msp/tlscacerts/tlsca.org1.example.com-cert.pem
+
+peer2: &peer2
+  addr: localhost:9051
+  org: org2
+  ssl_target_name_override: peer0.org2.example.com
+  tls_ca_cert: ./organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/msp/tlscacerts/tlsca.org2.example.com-cert.pem
+
+orderer1: &orderer1
+  addr: localhost:7050
+  org: org1
+  ssl_target_name_override: orderer.example.com
+  tls_ca_cert: ./organizations/ordererOrganizations/example.com/msp/tlscacerts/tlsca.example.com-cert.pem
+
+policyFile: ./test/andLogic.rego
+
+# Peer Nodes to interact with as endorsement Peers
+endorsers:
+  - *peer1
+  - *peer2
+
+# Peer Nodes to interact with as Commit Peers as listening
+committers:
+  - *peer1
+  - *peer2
+# we might support multi-committer in the future for more complex test scenario.
+# i.e. consider tx committed only if it's done on >50% of nodes.
+# Give your commit Threshold as numbers for peers here.
+commitThreshold: 1
+
+# orderer Nodes to interact with
+orderer: *orderer1
+
+# Invocation configs
+channel: mychannel
+chaincode: DTModeling
+# chain code args below, in a list of str
+# we provides 3 kinds of randmon
+# uuid
+# randomString$length
+# randomNumber$min_$max
+args:
+  - Modeling
+  - '{"id":"urn:uuid:3deca264-4f90-4321-a5ea-f197e6a1c7cf","title":"MyLampThing","description":"Lamp Thing Model Description","security":"basic_sc","properties":{"status":{"forms":[{"href":"https://mylamp.example.com/status","htv:methodName":"GET","op":"readproperty"}],"readOnly":true,"type":"string"}},"actions":{"toggle":{"forms":[{"href":"https://mylamp.example.com/toggle","htv:methodName":"POST","op":"invokeaction"}]}},"events":{"overheating":{"data":{"type":"string"},"forms":[{"href":"https://mylamp.example.com/oh","op":"subscribeevent","subprotocol":"longpoll"}]}},"access_struct":"","IPFS_address":"","CT":null}'
+  - randomString8
+# Tx submiter information
+mspid: Org1MSP
+private_key: ./organizations/peerOrganizations/org1.example.com/users/User1@org1.example.com/msp/keystore/priv_sk
+sign_cert: ./organizations/peerOrganizations/org1.example.com/users/User1@org1.example.com/msp/signcerts/User1@org1.example.com-cert.pem
+# network traffic control
+num_of_conn: 10
+client_per_conn: 10

@@ -24,6 +24,11 @@ type DTObject struct {
 	CT           []byte      `json:"CT"`
 }
 
+type User struct {
+	Id    string   `json:"id"`
+	Attrs []string `json:"attrs"`
+}
+
 func (t *SimpleChaincode) PutValue(ctx contractapi.TransactionContextInterface, key string, value string) error {
 	err := ctx.GetStub().PutState(key, []byte(value))
 	fmt.Printf("put value success,key:%v,value:%v", key, value)
@@ -87,15 +92,24 @@ func (t *SimpleChaincode) Update(ctx contractapi.TransactionContextInterface, td
 	return dtObjectId, nil
 }
 
-func (t *SimpleChaincode) GetDTObject(ctx contractapi.TransactionContextInterface, dtObjectId string) (string, error) {
+func (t *SimpleChaincode) GetDTObject(ctx contractapi.TransactionContextInterface, dtObjectId string, attrs string) (string, error) {
 	b, err := ctx.GetStub().GetState("DT_" + dtObjectId)
 	if b == nil {
 		return "", fmt.Errorf("key doesn't exist")
 	}
+	var dtObject DTObject
+	err = json.Unmarshal(b, &dtObject)
+	if err != nil {
+		return "", fmt.Errorf("unmarshal:%s", err)
+	}
+	if !checkAccessStructure(dtObject.AccessStruct, attrs) {
+		return "", fmt.Errorf("you do not have permission to access this DT")
+	}
 	return string(b), err
 }
 
-func (t *SimpleChaincode) SaveIPFSAddress(ctx contractapi.TransactionContextInterface, dtObjectId string, IPFSAddress string) error {
+func (t *SimpleChaincode) SaveIPFSAddress(ctx contractapi.TransactionContextInterface, dtId string, IPFSAddress string) error {
+	dtObjectId := "DT_" + dtId
 	b, err := ctx.GetStub().GetState(dtObjectId)
 	if b == nil {
 		return fmt.Errorf("dt object doesn't exist")
@@ -116,6 +130,46 @@ func (t *SimpleChaincode) SaveIPFSAddress(ctx contractapi.TransactionContextInte
 		return err
 	}
 	return nil
+}
+
+func (t *SimpleChaincode) SaveCT(ctx contractapi.TransactionContextInterface, dtId string, CT string) error {
+	dtObjectId := "DT_" + dtId
+	b, err := ctx.GetStub().GetState(dtObjectId)
+	if b == nil {
+		return fmt.Errorf("dt object doesn't exist")
+	}
+	var dtObject DTObject
+	err = json.Unmarshal(b, &dtObject)
+	if err != nil {
+		return err
+	}
+	dtObject.CT = []byte(CT)
+	//save to blockchain
+	dtBytes, err := json.Marshal(dtObject)
+	if err != nil {
+		return err
+	}
+	err = ctx.GetStub().PutState(dtObjectId, dtBytes)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (t *SimpleChaincode) SaveUser(ctx contractapi.TransactionContextInterface, userJson string) error {
+	var user User
+	err := json.Unmarshal([]byte(userJson), &user)
+	userId := "USER_" + user.Id
+	err = ctx.GetStub().PutState(userId, []byte(userJson))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func checkAccessStructure(accessStruct string, attrs string) bool {
+	// need do this in the blockchain?
+	return true
 }
 
 func main() {

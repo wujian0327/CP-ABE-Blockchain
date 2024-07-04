@@ -25,15 +25,15 @@ const (
 )
 
 // 调用Execute链码
-func ExecuteChaincode(chaincodeId string, functionName string, args ...string) ([]byte, error) {
+func ExecuteChaincode(chaincodeId string, functionName string, args ...string) ([]byte, int64, error) {
 	client, sdk, err := GetChannelClient()
 	defer sdk.Close()
 	if err != nil {
 		fmt.Println(err)
-		return nil, err
+		return nil, 0, err
 	}
 
-	fmt.Printf("------------invoke chaincode: %v,%v,%v------------------\n", chaincodeId, functionName, args)
+	//fmt.Printf("------------invoke chaincode: %v,%v,%v------------------\n", chaincodeId, functionName, args)
 	start := time.Now().UnixMilli()
 	byteArgs := make([][]byte, len(args))
 	for i, v := range args {
@@ -45,12 +45,12 @@ func ExecuteChaincode(chaincodeId string, functionName string, args ...string) (
 	)
 	if err != nil {
 		fmt.Printf("invoke to query funds: %s", err)
-		return nil, err
+		return nil, 0, err
 	}
 	end := time.Now().UnixMilli()
 	timeUsed := end - start
 	fmt.Printf("invoke chaincode success,status:%v, time: %vms,Payload: %v\n", response.ChaincodeStatus, timeUsed, string(response.Payload))
-	return response.Payload, nil
+	return response.Payload, timeUsed, nil
 }
 
 // 调用Query链码
@@ -62,8 +62,8 @@ func QueryChaincode(chaincodeId string, functionName string, args ...string) ([]
 		return nil, err
 	}
 
-	fmt.Printf("------------query chaincode: %v,%v,%v------------------\n", chaincodeId, functionName, args)
-	start := time.Now().UnixMilli()
+	//fmt.Printf("------------query chaincode: %v,%v,%v------------------\n", chaincodeId, functionName, args)
+	//start := time.Now().UnixMilli()
 	byteArgs := make([][]byte, len(args))
 	for i, v := range args {
 		byteArgs[i] = []byte(v)
@@ -76,8 +76,8 @@ func QueryChaincode(chaincodeId string, functionName string, args ...string) ([]
 		fmt.Printf("Failed to query funds: %s", err)
 		return nil, err
 	}
-	end := time.Now().UnixMilli()
-	fmt.Printf("query chaincode success,status:%v,time: %vms,Payload: %v\n", response.ChaincodeStatus, end-start, string(response.Payload))
+	//end := time.Now().UnixMilli()
+	//fmt.Printf("query chaincode success,status:%v,time: %vms,Payload: %v\n", response.ChaincodeStatus, end-start, string(response.Payload))
 	return response.Payload, nil
 }
 
@@ -142,6 +142,7 @@ func SDKInit() *fabsdk.FabricSDK {
 	dir, err := os.Getwd()
 	s1 := "test"
 	s2 := "benchmark"
+	//test文件不在根目录，处理下目录问题
 	if len(dir) > len(s1) && dir[len(dir)-len(s1):] == s1 {
 		dir = dir[:len(dir)-len(s1)] + ConfigPath
 	} else if len(dir) > len(s2) && dir[len(dir)-len(s2):] == s2 {
